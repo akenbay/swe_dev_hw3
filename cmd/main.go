@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
+	"os"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -26,5 +30,18 @@ func main() {
 
 	logger := l.Sugar()
 	defer logger.Sync()
+
+	err = godotenv.Load()
+
+	if err != nil {
+		logger.Fatal("Error loading .env")
+	}
+
+	db_url := os.Getenv("DATABASE_URL")
+	conn, err := pgx.Connect(context.Background(), db_url)
+	if err != nil {
+		logger.Fatal("Error connecting to database: ", err)
+	}
+	defer conn.Close(context.Background())
 
 }
