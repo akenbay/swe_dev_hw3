@@ -142,6 +142,7 @@ func (r *Repository) GetAttendanceRecordsByStudentID(studentID string) ([]model.
 	SELECT id, student_id, subject_id, visit_day, visited
 	FROM attendance
 	WHERE student_id = $1
+	LIMIT 5
 	`
 
 	rows, err := r.db.Query(context.Background(), query, studentID)
@@ -174,6 +175,7 @@ func (r *Repository) GetAttendanceRecordsBySubjectID(subjectID string) ([]model.
 	SELECT id, student_id, subject_id, visit_day, visited
 	FROM attendance
 	WHERE subject_id = $1
+	LIMIT 5
 	`
 
 	rows, err := r.db.Query(context.Background(), query, subjectID)
