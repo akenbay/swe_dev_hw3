@@ -3,7 +3,6 @@ package handler
 import (
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
@@ -80,16 +79,26 @@ func (h *Handler) CreateAttendanceRecord(c echo.Context) error {
 }
 
 func (h *Handler) GetAttendanceRecordsByStudentID(c echo.Context) error {
-	studentIDParam := c.Param("id")
-	if studentIDParam == "" {
+	studentID := c.Param("id")
+	if studentID == "" {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "id is required"})
-	}
-	studentID, err := strconv.Atoi(studentIDParam)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid student id"})
 	}
 
 	records, err := h.service.GetAttendanceRecordsByStudentID(studentID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, records)
+}
+
+func (h *Handler) GetAttendanceRecordsBySubjectID(c echo.Context) error {
+	subjectID := c.Param("id")
+	if subjectID == "" {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "id is required"})
+	}
+
+	records, err := h.service.GetAttendanceRecordsBySubjectID(subjectID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}

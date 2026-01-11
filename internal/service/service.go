@@ -29,10 +29,10 @@ func (s *Service) CreateAttendanceRecord(record *model.AttendanceRecord) error {
 	return s.repo.CreateAttendanceRecord(record)
 }
 
-func (s *Service) GetAttendanceRecordsByStudentID(studentID int) ([]model.AttendanceRecord, error) {
+func (s *Service) GetAttendanceRecordsByStudentID(studentID string) ([]model.AttendanceRecord, error) {
 	return s.repo.GetAttendanceRecordsByStudentID(studentID)
 }
 
-func (s *Service) GetAttendanceRecordsBySubjectID(subjectID int) ([]model.AttendanceRecord, error) {
+func (s *Service) GetAttendanceRecordsBySubjectID(subjectID string) ([]model.AttendanceRecord, error) {
 	return s.repo.GetAttendanceRecordsBySubjectID(subjectID)
 }

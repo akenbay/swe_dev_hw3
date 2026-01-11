@@ -137,7 +137,7 @@ func (r *Repository) CreateAttendanceRecord(record *model.AttendanceRecord) erro
 	return err
 }
 
-func (r *Repository) GetAttendanceRecordsByStudentID(studentID int) ([]model.AttendanceRecord, error) {
+func (r *Repository) GetAttendanceRecordsByStudentID(studentID string) ([]model.AttendanceRecord, error) {
 	query := `
 	SELECT id, student_id, subject_id, visit_day, visited
 	FROM attendance
@@ -169,7 +169,7 @@ func (r *Repository) GetAttendanceRecordsByStudentID(studentID int) ([]model.Att
 	return records, nil
 }
 
-func (r *Repository) GetAttendanceRecordsBySubjectID(subjectID int) ([]model.AttendanceRecord, error) {
+func (r *Repository) GetAttendanceRecordsBySubjectID(subjectID string) ([]model.AttendanceRecord, error) {
 	query := `
 	SELECT id, student_id, subject_id, visit_day, visited
 	FROM attendance
