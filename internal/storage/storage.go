@@ -136,3 +136,35 @@ func (r *Repository) CreateAttendanceRecord(record *model.AttendanceRecord) erro
 
 	return err
 }
+
+func (r *Repository) GetAttendanceRecordsByStudentID(studentID int) ([]model.AttendanceRecord, error) {
+	query := `
+	SELECT id, student_id, subject_id, visit_day, visited
+	FROM attendance
+	WHERE student_id = $1
+	`
+
+	rows, err := r.db.Query(context.Background(), query, studentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var records []model.AttendanceRecord
+	for rows.Next() {
+		var record model.AttendanceRecord
+		err := rows.Scan(
+			&record.ID,
+			&record.StudentID,
+			&record.SubjectID,
+			&record.VisitDay,
+			&record.Visited,
+		)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, record)
+	}
+
+	return records, nil
+}
