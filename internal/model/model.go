@@ -29,3 +29,33 @@ type AttendanceRecord struct {
 	VisitDay  string `json:"visit_day"`
 	Visited   bool   `json:"visited"`
 }
+
+// User represents a user account
+type User struct {
+	ID           int    `json:"id"`
+	Email        string `json:"email"`
+	PasswordHash string `json:"-"`
+	IsActive     bool   `json:"is_active"`
+	CreatedAt    string `json:"created_at"`
+}
+
+// AuthRequest is the payload for both registration and login
+type AuthRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// LoginResponse is returned after successful login
+type LoginResponse struct {
+	Token string `json:"token"`
+	User  *User  `json:"user"`
+}
+
+// UserResponse is the user info returned in /api/users/me
+type UserResponse struct {
+	ID        int      `json:"id"`
+	Email     string   `json:"email"`
+	IsActive  bool     `json:"is_active"`
+	CreatedAt string   `json:"created_at"`
+	Roles     []string `json:"roles"`
+}
