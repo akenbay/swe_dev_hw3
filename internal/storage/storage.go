@@ -202,3 +202,99 @@ func (r *Repository) GetAttendanceRecordsBySubjectID(subjectID string) ([]model.
 
 	return records, nil
 }
+
+// GetUserByEmail retrieves a user by email
+func (r *Repository) GetUserByEmail(email string) (*model.User, error) {
+	query := `
+	SELECT id, email, password_hash, is_active, created_at
+	FROM users
+	WHERE email = $1
+	`
+
+	var user model.User
+	err := r.db.QueryRow(context.Background(), query, email).Scan(
+		&user.ID,
+		&user.Email,
+		&user.PasswordHash,
+		&user.IsActive,
+		&user.CreatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// CreateUser creates a new user account
+func (r *Repository) CreateUser(email, passwordHash string) (*model.User, error) {
+	query := `
+	INSERT INTO users (email, password_hash)
+	VALUES ($1, $2)
+	RETURNING id, email, password_hash, is_active, created_at
+	`
+
+	var user model.User
+	err := r.db.QueryRow(
+		context.Background(),
+		query,
+		email,
+		passwordHash,
+	).Scan(
+		&user.ID,
+		&user.Email,
+		&user.PasswordHash,
+		&user.IsActive,
+		&user.CreatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// GetUserByID retrieves a user by ID with roles
+func (r *Repository) GetUserByID(userID string) (*model.UserResponse, error) {
+	query := `
+	SELECT u.id, u.email, u.is_active, u.created_at
+	FROM users u
+	WHERE u.id = $1
+	`
+
+	var user model.UserResponse
+	err := r.db.QueryRow(context.Background(), query, userID).Scan(
+		&user.ID,
+		&user.Email,
+		&user.IsActive,
+		&user.CreatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Get user roles
+	rolesQuery := `
+	SELECT r.name
+	FROM roles r
+	JOIN user_roles ur ON r.id = ur.role_id
+	WHERE ur.user_id = $1
+	`
+
+	rows, err := r.db.Query(context.Background(), rolesQuery, userID)
+	if err == nil {
+		defer rows.Close()
+		user.Roles = []string{}
+		for rows.Next() {
+			var roleName string
+			if err := rows.Scan(&roleName); err == nil {
+				user.Roles = append(user.Roles, roleName)
+			}
+		}
+	}
+
+	return &user, nil
+}
