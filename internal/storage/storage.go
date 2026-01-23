@@ -47,6 +47,40 @@ func (r *Repository) GetStudentByID(id string) (*model.StudentResponse, error) {
 	return &student, nil
 }
 
+func (r *Repository) GetAllStudents() ([]model.StudentListResponse, error) {
+	query := `
+	SELECT s.id, s.first_name, s.last_name,
+	       g.name AS group,
+	       u.email
+	FROM students s
+	LEFT JOIN groups g ON s.group_id = g.id
+	LEFT JOIN users u ON s.user_id = u.id
+	`
+
+	rows, err := r.db.Query(context.Background(), query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var students []model.StudentListResponse
+	for rows.Next() {
+		var student model.StudentListResponse
+		if err := rows.Scan(
+			&student.ID,
+			&student.FirstName,
+			&student.LastName,
+			&student.Group,
+			&student.Email,
+		); err != nil {
+			return nil, err
+		}
+		students = append(students, student)
+	}
+
+	return students, rows.Err()
+}
+
 func (r *Repository) GetAllSchedules() ([]model.ScheduleResponse, error) {
 	var err error
 
