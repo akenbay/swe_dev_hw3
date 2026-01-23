@@ -35,6 +35,10 @@ func (s *Service) GetStudentByID(id string) (*model.StudentResponse, error) {
 	return s.repo.GetStudentByID(id)
 }
 
+func (s *Service) GetAllStudents() ([]model.StudentListResponse, error) {
+	return s.repo.GetAllStudents()
+}
+
 func (s *Service) GetAllSchedules() ([]model.ScheduleResponse, error) {
 	return s.repo.GetAllSchedules()
 }
