@@ -359,3 +359,31 @@ func (r *Repository) GetStudentsGPA() ([]model.StudentGPAResponse, error) {
 
 	return results, rows.Err()
 }
+
+func (r *Repository) GetSubjectStats() ([]model.SubjectStatsResponse, error) {
+	query := `
+	SELECT sub.name,
+	       COUNT(g.grade) AS graded_students,
+	       ROUND(AVG(g.grade)::NUMERIC, 2) AS avg_grade
+	FROM subjects sub
+	INNER JOIN grades g ON g.subject_id = sub.id
+	GROUP BY sub.name
+	`
+
+	rows, err := r.db.Query(context.Background(), query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []model.SubjectStatsResponse
+	for rows.Next() {
+		var result model.SubjectStatsResponse
+		if err := rows.Scan(&result.Name, &result.GradedStudents, &result.AverageGrade); err != nil {
+			return nil, err
+		}
+		results = append(results, result)
+	}
+
+	return results, rows.Err()
+}
