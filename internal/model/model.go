@@ -11,6 +11,14 @@ type StudentResponse struct {
 	GroupName string `json:"group_name"`
 }
 
+type StudentListResponse struct {
+	ID        int    `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Group     string `json:"group"`
+	Email     string `json:"email"`
+}
+
 type Subject struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
