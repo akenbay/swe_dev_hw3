@@ -19,6 +19,11 @@ type StudentListResponse struct {
 	Email     string `json:"email"`
 }
 
+type StudentGPAResponse struct {
+	ID  int     `json:"id"`
+	GPA float64 `json:"gpa"`
+}
+
 type Subject struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
