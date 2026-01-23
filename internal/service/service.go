@@ -39,6 +39,10 @@ func (s *Service) GetAllStudents() ([]model.StudentListResponse, error) {
 	return s.repo.GetAllStudents()
 }
 
+func (s *Service) GetStudentsGPA() ([]model.StudentGPAResponse, error) {
+	return s.repo.GetStudentsGPA()
+}
+
 func (s *Service) GetAllSchedules() ([]model.ScheduleResponse, error) {
 	return s.repo.GetAllSchedules()
 }
