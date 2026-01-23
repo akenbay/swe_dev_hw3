@@ -32,6 +32,7 @@ func (h *Handler) Register(e *echo.Echo) {
 	// Public student/schedule routes
 	e.GET("/student/:id", h.GetStudentByID)
 	e.GET("/students", h.GetAllStudents)
+	e.GET("/students/gpa", h.GetStudentsGPA)
 	e.GET("/all_class_schedule", h.GetAllSchedules)
 	e.GET("/schedule/group/:id", h.GetGroupSchedule)
 }
@@ -59,6 +60,14 @@ func (h *Handler) GetAllStudents(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 	return c.JSON(http.StatusOK, students)
+}
+
+func (h *Handler) GetStudentsGPA(c echo.Context) error {
+	gpaList, err := h.service.GetStudentsGPA()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, gpaList)
 }
 
 func (h *Handler) GetAllSchedules(c echo.Context) error {
