@@ -31,6 +31,7 @@ func (h *Handler) Register(e *echo.Echo) {
 
 	// Public student/schedule routes
 	e.GET("/student/:id", h.GetStudentByID)
+	e.GET("/students", h.GetAllStudents)
 	e.GET("/all_class_schedule", h.GetAllSchedules)
 	e.GET("/schedule/group/:id", h.GetGroupSchedule)
 }
@@ -50,6 +51,14 @@ func (h *Handler) GetStudentByID(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, student)
+}
+
+func (h *Handler) GetAllStudents(c echo.Context) error {
+	students, err := h.service.GetAllStudents()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, students)
 }
 
 func (h *Handler) GetAllSchedules(c echo.Context) error {
