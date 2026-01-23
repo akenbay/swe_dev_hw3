@@ -332,3 +332,30 @@ func (r *Repository) GetUserByID(userID string) (*model.UserResponse, error) {
 
 	return &user, nil
 }
+
+func (r *Repository) GetStudentsGPA() ([]model.StudentGPAResponse, error) {
+	query := `
+	SELECT s.id,
+	       ROUND(AVG(g.grade)::NUMERIC, 2) AS gpa
+	FROM students s
+	INNER JOIN grades g ON g.student_id = s.id
+	GROUP BY s.id
+	`
+
+	rows, err := r.db.Query(context.Background(), query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []model.StudentGPAResponse
+	for rows.Next() {
+		var result model.StudentGPAResponse
+		if err := rows.Scan(&result.ID, &result.GPA); err != nil {
+			return nil, err
+		}
+		results = append(results, result)
+	}
+
+	return results, rows.Err()
+}
