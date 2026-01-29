@@ -95,11 +95,7 @@ func initializeDatabase(ctx context.Context, db *pgx.Conn, logger *zap.SugaredLo
 	// Read init.sql file
 	sqlBytes, err := os.ReadFile("init.sql")
 	if err != nil {
-		// Try parent directory
-		sqlBytes, err = os.ReadFile("../init.sql")
-		if err != nil {
-			return err
-		}
+		return err
 	}
 
 	// Execute the entire SQL file
