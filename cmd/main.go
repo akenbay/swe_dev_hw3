@@ -93,7 +93,7 @@ func initializeDatabase(ctx context.Context, db *pgx.Conn, logger *zap.SugaredLo
 	logger.Info("Initializing database from init.sql...")
 
 	// Read init.sql file
-	sqlBytes, err := os.ReadFile("init.sql")
+	sqlBytes, err := os.ReadFile("cmd/init.sql")
 	if err != nil {
 		return err
 	}
