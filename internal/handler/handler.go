@@ -156,6 +156,9 @@ func (h *Handler) GetCurrentUser(c echo.Context) error {
 
 	user, err := h.service.GetCurrentUser(userID)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": "user not found"})
+		}
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 
