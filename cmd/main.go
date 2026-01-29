@@ -35,13 +35,15 @@ func main() {
 	logger := l.Sugar()
 	defer logger.Sync()
 
-	err = godotenv.Load()
-
-	if err != nil {
-		logger.Fatal("Error loading .env")
-	}
+	// Load .env file if it exists (for local development)
+	// In production (Render.com), environment variables are set directly
+	_ = godotenv.Load()
 
 	db_url := os.Getenv("DATABASE_URL")
+	if db_url == "" {
+		logger.Fatal("DATABASE_URL environment variable is not set")
+	}
+
 	db, err := pgx.Connect(context.Background(), db_url)
 	if err != nil {
 		logger.Fatal("Error connecting to database: ", err)
@@ -53,7 +55,14 @@ func main() {
 	hnd := handler.NewHandler(svc)
 	srv := server.NewServer(hnd)
 
-	err = srv.Start(":8080")
+	// Use PORT environment variable (set by Render.com) or default to 8080
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	logger.Infof("Starting server on port %s", port)
+	err = srv.Start(":" + port)
 	if err != nil {
 		logger.Fatal("server error: ", err)
 	}
