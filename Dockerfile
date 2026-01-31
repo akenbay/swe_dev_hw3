@@ -15,7 +15,7 @@ COPY . .
 RUN go build -o uni_server ./cmd/main.go
 
 # Используем минимальный образ для финального контейнера
-FROM debian:bookworm-slim
+FROM alpine:latest 
 
 WORKDIR /app
 
