@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"os"
-	"time"
 	"university/internal/handler"
 	"university/internal/server"
 	"university/internal/service"
@@ -18,10 +17,6 @@ import (
 
 func main() {
 	var err error
-	time.Local, err = time.LoadLocation("Asia/Almaty")
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	encoderCfg := zap.NewProductionConfig()
 	encoderCfg.EncoderConfig.TimeKey = "timestamp"
