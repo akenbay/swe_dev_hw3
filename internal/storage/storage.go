@@ -472,6 +472,135 @@ func (r *Repository) GetGroupSchedule(groupID string) ([]model.ScheduleResponse,
 	return schedules, nil
 }
 
+func (r *Repository) CreateFaculty(req *model.CreateFacultyRequest) (*model.FacultyResponse, error) {
+	query := `INSERT INTO faculties (name) VALUES ($1) RETURNING id, name`
+	var faculty model.FacultyResponse
+	err := r.db.QueryRow(context.Background(), query, req.Name).Scan(&faculty.ID, &faculty.Name)
+	if err != nil {
+		return nil, err
+	}
+	return &faculty, nil
+}
+
+func (r *Repository) GetFacultyByID(id string) (*model.FacultyResponse, error) {
+	query := `SELECT id, name FROM faculties WHERE id = $1`
+	var faculty model.FacultyResponse
+	err := r.db.QueryRow(context.Background(), query, id).Scan(&faculty.ID, &faculty.Name)
+	if err != nil {
+		return nil, err
+	}
+	return &faculty, nil
+}
+
+func (r *Repository) GetAllFaculties() ([]model.FacultyResponse, error) {
+	query := `SELECT id, name FROM faculties ORDER BY id`
+	rows, err := r.db.Query(context.Background(), query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var faculties []model.FacultyResponse
+	for rows.Next() {
+		var f model.FacultyResponse
+		if err := rows.Scan(&f.ID, &f.Name); err != nil {
+			return nil, err
+		}
+		faculties = append(faculties, f)
+	}
+	return faculties, rows.Err()
+}
+
+func (r *Repository) CreateGroup(req *model.CreateGroupRequest) (*model.GroupResponse, error) {
+	query := `
+	INSERT INTO groups (name, faculty_id) VALUES ($1, $2)
+	RETURNING id, name, faculty_id, COALESCE((SELECT name FROM faculties WHERE id = $2), '')
+	`
+	var group model.GroupResponse
+	err := r.db.QueryRow(context.Background(), query, req.Name, req.FacultyID).Scan(
+		&group.ID, &group.Name, &group.FacultyID, &group.FacultyName,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &group, nil
+}
+
+func (r *Repository) GetGroupByID(id string) (*model.GroupResponse, error) {
+	query := `
+	SELECT g.id, g.name, g.faculty_id, COALESCE(f.name, '') FROM groups g
+	LEFT JOIN faculties f ON g.faculty_id = f.id
+	WHERE g.id = $1
+	`
+	var group model.GroupResponse
+	err := r.db.QueryRow(context.Background(), query, id).Scan(
+		&group.ID, &group.Name, &group.FacultyID, &group.FacultyName,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &group, nil
+}
+
+func (r *Repository) GetAllGroups() ([]model.GroupResponse, error) {
+	query := `
+	SELECT g.id, g.name, g.faculty_id, COALESCE(f.name, '') FROM groups g
+	LEFT JOIN faculties f ON g.faculty_id = f.id
+	ORDER BY g.id
+	`
+	rows, err := r.db.Query(context.Background(), query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var groups []model.GroupResponse
+	for rows.Next() {
+		var g model.GroupResponse
+		if err := rows.Scan(&g.ID, &g.Name, &g.FacultyID, &g.FacultyName); err != nil {
+			return nil, err
+		}
+		groups = append(groups, g)
+	}
+	return groups, rows.Err()
+}
+
+func (r *Repository) CreateSubject(req *model.CreateSubjectRequest) (*model.SubjectResponse, error) {
+	query := `INSERT INTO subjects (name) VALUES ($1) RETURNING id, name`
+	var subject model.SubjectResponse
+	err := r.db.QueryRow(context.Background(), query, req.Name).Scan(&subject.ID, &subject.Name)
+	if err != nil {
+		return nil, err
+	}
+	return &subject, nil
+}
+
+func (r *Repository) GetSubjectByID(id string) (*model.SubjectResponse, error) {
+	query := `SELECT id, name FROM subjects WHERE id = $1`
+	var subject model.SubjectResponse
+	err := r.db.QueryRow(context.Background(), query, id).Scan(&subject.ID, &subject.Name)
+	if err != nil {
+		return nil, err
+	}
+	return &subject, nil
+}
+
+func (r *Repository) GetAllSubjects() ([]model.SubjectResponse, error) {
+	query := `SELECT id, name FROM subjects ORDER BY id`
+	rows, err := r.db.Query(context.Background(), query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var subjects []model.SubjectResponse
+	for rows.Next() {
+		var s model.SubjectResponse
+		if err := rows.Scan(&s.ID, &s.Name); err != nil {
+			return nil, err
+		}
+		subjects = append(subjects, s)
+	}
+	return subjects, rows.Err()
+}
+
 func (r *Repository) CreateAttendanceRecord(req *model.CreateAttendanceRequest) (*model.AttendanceRecord, error) {
 	query := `
 	INSERT INTO attendance (student_id, subject_id, visit_day, visited)
