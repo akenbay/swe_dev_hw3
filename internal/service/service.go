@@ -35,6 +35,18 @@ func (s *Service) GetStudentByID(id string) (*model.StudentResponse, error) {
 	return s.repo.GetStudentByID(id)
 }
 
+func (s *Service) CreateStudent(req *model.CreateStudentRequest) (*model.StudentResponse, error) {
+	return s.repo.CreateStudent(req)
+}
+
+func (s *Service) UpdateStudent(id string, req *model.UpdateStudentRequest) (*model.StudentResponse, error) {
+	return s.repo.UpdateStudent(id, req)
+}
+
+func (s *Service) DeleteStudent(id string) error {
+	return s.repo.DeleteStudent(id)
+}
+
 func (s *Service) GetAllStudents() ([]model.StudentListResponse, error) {
 	return s.repo.GetAllStudents()
 }
@@ -51,12 +63,44 @@ func (s *Service) GetAllSchedules() ([]model.ScheduleResponse, error) {
 	return s.repo.GetAllSchedules()
 }
 
+func (s *Service) CreateSchedule(req *model.CreateScheduleRequest) (*model.ScheduleResponse, error) {
+	return s.repo.CreateSchedule(req)
+}
+
+func (s *Service) UpdateSchedule(id string, req *model.UpdateScheduleRequest) (*model.ScheduleResponse, error) {
+	return s.repo.UpdateSchedule(id, req)
+}
+
+func (s *Service) DeleteSchedule(id string) error {
+	return s.repo.DeleteSchedule(id)
+}
+
+func (s *Service) GetScheduleByID(id string) (*model.ScheduleResponse, error) {
+	return s.repo.GetScheduleByID(id)
+}
+
 func (s *Service) GetGroupSchedule(groupID string) ([]model.ScheduleResponse, error) {
 	return s.repo.GetGroupSchedule(groupID)
 }
 
-func (s *Service) CreateAttendanceRecord(record *model.AttendanceRecord) error {
+func (s *Service) CreateAttendanceRecord(record *model.AttendanceRecord) (*model.AttendanceRecord, error) {
 	return s.repo.CreateAttendanceRecord(record)
+}
+
+func (s *Service) UpdateAttendanceRecord(id string, req *model.UpdateAttendanceRequest) (*model.AttendanceRecord, error) {
+	return s.repo.UpdateAttendanceRecord(id, req)
+}
+
+func (s *Service) DeleteAttendanceRecord(id string) error {
+	return s.repo.DeleteAttendanceRecord(id)
+}
+
+func (s *Service) GetAttendanceByID(id string) (*model.AttendanceRecord, error) {
+	return s.repo.GetAttendanceByID(id)
+}
+
+func (s *Service) GetAllAttendanceRecords() ([]model.AttendanceRecord, error) {
+	return s.repo.GetAllAttendanceRecords()
 }
 
 func (s *Service) GetAttendanceRecordsByStudentID(studentID string) ([]model.AttendanceRecord, error) {
