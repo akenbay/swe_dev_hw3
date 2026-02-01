@@ -128,7 +128,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.AttendanceRecord"
+                            "$ref": "#/definitions/model.CreateAttendanceRequest"
                         }
                     }
                 ],
@@ -310,6 +310,24 @@ const docTemplate = `{
                 }
             }
         },
+        "model.CreateAttendanceRequest": {
+            "type": "object",
+            "required": ["student_id", "subject_id", "visit_day", "visited"],
+            "properties": {
+                "student_id": {
+                    "type": "integer"
+                },
+                "subject_id": {
+                    "type": "integer"
+                },
+                "visit_day": {
+                    "type": "string"
+                },
+                "visited": {
+                    "type": "boolean"
+                }
+            }
+        },
         "model.CreateStudentRequest": {
             "type": "object",
             "properties": {
@@ -319,10 +337,6 @@ const docTemplate = `{
                 "first_name": {
                     "type": "string"
                 },
-                "firstname": {
-                    "description": "frontend alias",
-                    "type": "string"
-                },
                 "gender": {
                     "type": "string"
                 },
@@ -330,13 +344,10 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "group_name": {
+                    "description": "Optional: used when group_id is 0",
                     "type": "string"
                 },
                 "last_name": {
-                    "type": "string"
-                },
-                "surname": {
-                    "description": "frontend alias",
                     "type": "string"
                 }
             }
@@ -381,7 +392,7 @@ const docTemplate = `{
                 "first_name": {
                     "type": "string"
                 },
-                "group": {
+                "group_name": {
                     "type": "string"
                 },
                 "id": {
@@ -424,9 +435,6 @@ const docTemplate = `{
                 "first_name": {
                     "type": "string"
                 },
-                "firstname": {
-                    "type": "string"
-                },
                 "gender": {
                     "type": "string"
                 },
@@ -437,9 +445,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "last_name": {
-                    "type": "string"
-                },
-                "surname": {
                     "type": "string"
                 }
             }

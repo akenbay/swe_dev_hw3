@@ -83,8 +83,8 @@ func (s *Service) GetGroupSchedule(groupID string) ([]model.ScheduleResponse, er
 	return s.repo.GetGroupSchedule(groupID)
 }
 
-func (s *Service) CreateAttendanceRecord(record *model.AttendanceRecord) (*model.AttendanceRecord, error) {
-	return s.repo.CreateAttendanceRecord(record)
+func (s *Service) CreateAttendanceRecord(req *model.CreateAttendanceRequest) (*model.AttendanceRecord, error) {
+	return s.repo.CreateAttendanceRecord(req)
 }
 
 func (s *Service) UpdateAttendanceRecord(id string, req *model.UpdateAttendanceRequest) (*model.AttendanceRecord, error) {

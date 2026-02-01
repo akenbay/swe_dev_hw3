@@ -294,16 +294,16 @@ func (h *Handler) GetAttendanceByID(c echo.Context) error {
 // @Summary      Create attendance record
 // @Tags         attendance
 // @Accept       json
-// @Param        body  body  model.AttendanceRecord  true  "Attendance data"
+// @Param        body  body  model.CreateAttendanceRequest  true  "Attendance data"
 // @Success      201   {object}  model.AttendanceRecord
 // @Router       /attendance [post]
 func (h *Handler) CreateAttendanceRecord(c echo.Context) error {
-	var record model.AttendanceRecord
-	if err := c.Bind(&record); err != nil {
+	var req model.CreateAttendanceRequest
+	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
-	created, err := h.service.CreateAttendanceRecord(&record)
+	created, err := h.service.CreateAttendanceRecord(&req)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}

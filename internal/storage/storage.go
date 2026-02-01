@@ -113,15 +113,6 @@ func (r *Repository) GetGroupIDByName(name string) (int, error) {
 }
 
 func (r *Repository) CreateStudent(req *model.CreateStudentRequest) (*model.StudentResponse, error) {
-	firstName := req.FirstName
-	if firstName == "" {
-		firstName = req.Firstname
-	}
-	lastName := req.LastName
-	if lastName == "" {
-		lastName = req.Surname
-	}
-
 	groupID := req.GroupID
 	if groupID == 0 && req.GroupName != "" {
 		id, err := r.GetGroupIDByName(req.GroupName)
@@ -142,8 +133,8 @@ func (r *Repository) CreateStudent(req *model.CreateStudentRequest) (*model.Stud
 	err := r.db.QueryRow(
 		context.Background(),
 		query,
-		firstName,
-		lastName,
+		req.FirstName,
+		req.LastName,
 		req.Gender,
 		req.BirthDate,
 		groupID,
@@ -171,18 +162,10 @@ func (r *Repository) UpdateStudent(id string, req *model.UpdateStudentRequest) (
 		query += fmt.Sprintf("first_name = $%d, ", argNum)
 		args = append(args, *req.FirstName)
 		argNum++
-	} else if req.Firstname != nil {
-		query += fmt.Sprintf("first_name = $%d, ", argNum)
-		args = append(args, *req.Firstname)
-		argNum++
 	}
 	if req.LastName != nil {
 		query += fmt.Sprintf("last_name = $%d, ", argNum)
 		args = append(args, *req.LastName)
-		argNum++
-	} else if req.Surname != nil {
-		query += fmt.Sprintf("last_name = $%d, ", argNum)
-		args = append(args, *req.Surname)
 		argNum++
 	}
 	if req.Gender != nil {
@@ -240,18 +223,16 @@ func (r *Repository) DeleteStudent(id string) error {
 }
 
 func (r *Repository) GetStudentByID(id string) (*model.StudentResponse, error) {
-	var err error
-
 	query := `
-	SELECT s.id, s.first_name, s.last_name, s.gender, s.birth_date, g.name
+	SELECT s.id, s.first_name, s.last_name, s.gender, s.birth_date, COALESCE(g.name, '')
 	FROM students s
-	JOIN groups g ON s.group_id = g.id
+	LEFT JOIN groups g ON s.group_id = g.id
 	WHERE s.id = $1
 	`
 
 	var student model.StudentResponse
 
-	err = r.db.QueryRow(
+	err := r.db.QueryRow(
 		context.Background(),
 		query,
 		id,
@@ -274,8 +255,8 @@ func (r *Repository) GetStudentByID(id string) (*model.StudentResponse, error) {
 func (r *Repository) GetAllStudents() ([]model.StudentListResponse, error) {
 	query := `
 	SELECT s.id, s.first_name, s.last_name,
-	       g.name AS group,
-	       u.email
+	       COALESCE(g.name, '') AS group_name,
+	       COALESCE(u.email, '') AS email
 	FROM students s
 	LEFT JOIN groups g ON s.group_id = g.id
 	LEFT JOIN users u ON s.user_id = u.id
@@ -294,7 +275,7 @@ func (r *Repository) GetAllStudents() ([]model.StudentListResponse, error) {
 			&student.ID,
 			&student.FirstName,
 			&student.LastName,
-			&student.Group,
+			&student.GroupName,
 			&student.Email,
 		); err != nil {
 			return nil, err
@@ -491,7 +472,7 @@ func (r *Repository) GetGroupSchedule(groupID string) ([]model.ScheduleResponse,
 	return schedules, nil
 }
 
-func (r *Repository) CreateAttendanceRecord(record *model.AttendanceRecord) (*model.AttendanceRecord, error) {
+func (r *Repository) CreateAttendanceRecord(req *model.CreateAttendanceRequest) (*model.AttendanceRecord, error) {
 	query := `
 	INSERT INTO attendance (student_id, subject_id, visit_day, visited)
 	VALUES ($1, $2, $3, $4)
@@ -502,10 +483,10 @@ func (r *Repository) CreateAttendanceRecord(record *model.AttendanceRecord) (*mo
 	err := r.db.QueryRow(
 		context.Background(),
 		query,
-		record.StudentID,
-		record.SubjectID,
-		record.VisitDay,
-		record.Visited,
+		req.StudentID,
+		req.SubjectID,
+		req.VisitDay,
+		req.Visited,
 	).Scan(
 		&created.ID,
 		&created.StudentID,

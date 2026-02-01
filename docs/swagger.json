@@ -125,20 +125,20 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.AttendanceRecord"
+                                "$ref": "#/definitions/model.CreateAttendanceRequest"
+                            }
                         }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/model.AttendanceRecord"
+                    ],
+                    "responses": {
+                        "201": {
+                            "description": "Created",
+                            "schema": {
+                                "$ref": "#/definitions/model.AttendanceRecord"
+                            }
                         }
                     }
                 }
-            }
-        },
+            },
         "/student/{id}": {
             "get": {
                 "tags": [
@@ -307,6 +307,24 @@
                 }
             }
         },
+        "model.CreateAttendanceRequest": {
+            "type": "object",
+            "required": ["student_id", "subject_id", "visit_day", "visited"],
+            "properties": {
+                "student_id": {
+                    "type": "integer"
+                },
+                "subject_id": {
+                    "type": "integer"
+                },
+                "visit_day": {
+                    "type": "string"
+                },
+                "visited": {
+                    "type": "boolean"
+                }
+            }
+        },
         "model.CreateStudentRequest": {
             "type": "object",
             "properties": {
@@ -316,10 +334,6 @@
                 "first_name": {
                     "type": "string"
                 },
-                "firstname": {
-                    "description": "frontend alias",
-                    "type": "string"
-                },
                 "gender": {
                     "type": "string"
                 },
@@ -327,13 +341,10 @@
                     "type": "integer"
                 },
                 "group_name": {
+                    "description": "Optional: used when group_id is 0",
                     "type": "string"
                 },
                 "last_name": {
-                    "type": "string"
-                },
-                "surname": {
-                    "description": "frontend alias",
                     "type": "string"
                 }
             }
@@ -378,7 +389,7 @@
                 "first_name": {
                     "type": "string"
                 },
-                "group": {
+                "group_name": {
                     "type": "string"
                 },
                 "id": {
@@ -421,9 +432,6 @@
                 "first_name": {
                     "type": "string"
                 },
-                "firstname": {
-                    "type": "string"
-                },
                 "gender": {
                     "type": "string"
                 },
@@ -434,9 +442,6 @@
                     "type": "string"
                 },
                 "last_name": {
-                    "type": "string"
-                },
-                "surname": {
                     "type": "string"
                 }
             }
