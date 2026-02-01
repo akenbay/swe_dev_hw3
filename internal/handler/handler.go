@@ -52,6 +52,13 @@ func (h *Handler) Register(e *echo.Echo) {
 	e.DELETE("/attendance/:id", h.DeleteAttendanceRecord)
 }
 
+// GetStudentByID godoc
+// @Summary      Get student by ID
+// @Tags         students
+// @Param        id   path      string  true  "Student ID"
+// @Success      200  {object}  model.StudentResponse
+// @Failure      404  {object}  map[string]string
+// @Router       /student/{id} [get]
 func (h *Handler) GetStudentByID(c echo.Context) error {
 	id := c.Param("id")
 	if id == "" {
@@ -69,6 +76,11 @@ func (h *Handler) GetStudentByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, student)
 }
 
+// GetAllStudents godoc
+// @Summary      Get all students
+// @Tags         students
+// @Success      200  {array}   model.StudentListResponse
+// @Router       /students [get]
 func (h *Handler) GetAllStudents(c echo.Context) error {
 	students, err := h.service.GetAllStudents()
 	if err != nil {
@@ -77,6 +89,13 @@ func (h *Handler) GetAllStudents(c echo.Context) error {
 	return c.JSON(http.StatusOK, students)
 }
 
+// CreateStudent godoc
+// @Summary      Create a student
+// @Tags         students
+// @Accept       json
+// @Param        body  body  model.CreateStudentRequest  true  "Student data"
+// @Success      201   {object}  model.StudentResponse
+// @Router       /students [post]
 func (h *Handler) CreateStudent(c echo.Context) error {
 	var req model.CreateStudentRequest
 	if err := c.Bind(&req); err != nil {
@@ -90,6 +109,13 @@ func (h *Handler) CreateStudent(c echo.Context) error {
 	return c.JSON(http.StatusCreated, student)
 }
 
+// UpdateStudent godoc
+// @Summary      Update a student
+// @Tags         students
+// @Param        id    path      string  true  "Student ID"
+// @Param        body  body      model.UpdateStudentRequest  true  "Update data"
+// @Success      200   {object}  model.StudentResponse
+// @Router       /students/{id} [patch]
 func (h *Handler) UpdateStudent(c echo.Context) error {
 	id := c.Param("id")
 	if id == "" {
@@ -111,6 +137,12 @@ func (h *Handler) UpdateStudent(c echo.Context) error {
 	return c.JSON(http.StatusOK, student)
 }
 
+// DeleteStudent godoc
+// @Summary      Delete a student
+// @Tags         students
+// @Param        id   path  string  true  "Student ID"
+// @Success      204
+// @Router       /students/{id} [delete]
 func (h *Handler) DeleteStudent(c echo.Context) error {
 	id := c.Param("id")
 	if id == "" {
@@ -140,6 +172,11 @@ func (h *Handler) GetSubjectStats(c echo.Context) error {
 	return c.JSON(http.StatusOK, stats)
 }
 
+// GetAllSchedules godoc
+// @Summary      Get all schedules
+// @Tags         schedules
+// @Success      200  {array}  model.ScheduleResponse
+// @Router       /all_class_schedule [get]
 func (h *Handler) GetAllSchedules(c echo.Context) error {
 	schedules, err := h.service.GetAllSchedules()
 	if err != nil {
@@ -224,6 +261,11 @@ func (h *Handler) DeleteSchedule(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
+// GetAllAttendanceRecords godoc
+// @Summary      Get all attendance records
+// @Tags         attendance
+// @Success      200  {array}  model.AttendanceRecord
+// @Router       /attendance [get]
 func (h *Handler) GetAllAttendanceRecords(c echo.Context) error {
 	records, err := h.service.GetAllAttendanceRecords()
 	if err != nil {
@@ -248,6 +290,13 @@ func (h *Handler) GetAttendanceByID(c echo.Context) error {
 	return c.JSON(http.StatusOK, record)
 }
 
+// CreateAttendanceRecord godoc
+// @Summary      Create attendance record
+// @Tags         attendance
+// @Accept       json
+// @Param        body  body  model.AttendanceRecord  true  "Attendance data"
+// @Success      201   {object}  model.AttendanceRecord
+// @Router       /attendance [post]
 func (h *Handler) CreateAttendanceRecord(c echo.Context) error {
 	var record model.AttendanceRecord
 	if err := c.Bind(&record); err != nil {
@@ -295,7 +344,13 @@ func (h *Handler) DeleteAttendanceRecord(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-// Register_User handles user registration
+// Register_User godoc
+// @Summary      Register a new user
+// @Tags         auth
+// @Accept       json
+// @Param        body  body  model.AuthRequest  true  "Email and password"
+// @Success      201   {object}  map[string]interface{}
+// @Router       /api/auth/register [post]
 func (h *Handler) Register_User(c echo.Context) error {
 	var req model.AuthRequest
 	if err := c.Bind(&req); err != nil {
@@ -313,7 +368,13 @@ func (h *Handler) Register_User(c echo.Context) error {
 	})
 }
 
-// Login handles user login and returns JWT token
+// Login godoc
+// @Summary      Login
+// @Tags         auth
+// @Accept       json
+// @Param        body  body  model.AuthRequest  true  "Email and password"
+// @Success      200   {object}  model.LoginResponse
+// @Router       /api/auth/login [post]
 func (h *Handler) Login(c echo.Context) error {
 	var req model.AuthRequest
 	if err := c.Bind(&req); err != nil {

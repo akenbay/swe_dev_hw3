@@ -15,6 +15,11 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// @title           University API
+// @version         1.0
+// @description     University management API - students, schedules, attendance
+// @host            localhost:8080
+// @BasePath        /
 func main() {
 	var err error
 

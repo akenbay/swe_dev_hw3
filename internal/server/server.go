@@ -5,8 +5,11 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	echoSwagger "github.com/swaggo/echo-swagger"
 
 	"university/internal/handler"
+
+	_ "university/docs"
 )
 
 type Server struct {
@@ -33,6 +36,9 @@ func (s *Server) Start(addr string) error {
 
 	// Register all routes (public and protected)
 	s.handler.Register(e)
+
+	// Swagger UI
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	return e.Start(addr)
 }
