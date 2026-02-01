@@ -19,6 +19,49 @@ type StudentListResponse struct {
 	Email     string `json:"email"`
 }
 
+type CreateStudentRequest struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Firstname string `json:"firstname"` // frontend alias
+	Surname   string `json:"surname"`   // frontend alias
+	Gender    string `json:"gender"`
+	BirthDate string `json:"birth_date"`
+	GroupID   int    `json:"group_id"`
+	GroupName string `json:"group_name"`
+}
+
+type UpdateStudentRequest struct {
+	FirstName *string `json:"first_name,omitempty"`
+	LastName  *string `json:"last_name,omitempty"`
+	Firstname *string `json:"firstname,omitempty"`
+	Surname   *string `json:"surname,omitempty"`
+	Gender    *string `json:"gender,omitempty"`
+	BirthDate *string `json:"birth_date,omitempty"`
+	GroupID   *int    `json:"group_id,omitempty"`
+	GroupName *string `json:"group_name,omitempty"`
+}
+
+type CreateScheduleRequest struct {
+	FacultyID int    `json:"faculty_id"`
+	GroupID   int    `json:"group_id"`
+	SubjectID int    `json:"subject_id"`
+	ClassTime string `json:"class_time"`
+}
+
+type UpdateScheduleRequest struct {
+	FacultyID *int    `json:"faculty_id,omitempty"`
+	GroupID   *int    `json:"group_id,omitempty"`
+	SubjectID *int    `json:"subject_id,omitempty"`
+	ClassTime *string `json:"class_time,omitempty"`
+}
+
+type UpdateAttendanceRequest struct {
+	StudentID *int    `json:"student_id,omitempty"`
+	SubjectID *int    `json:"subject_id,omitempty"`
+	VisitDay  *string `json:"visit_day,omitempty"`
+	Visited   *bool   `json:"visited,omitempty"`
+}
+
 type StudentGPAResponse struct {
 	ID  int     `json:"id"`
 	GPA float64 `json:"gpa"`
