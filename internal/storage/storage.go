@@ -106,6 +106,139 @@ func (r *Repository) InitDB() error {
 	return nil
 }
 
+func (r *Repository) GetGroupIDByName(name string) (int, error) {
+	var id int
+	err := r.db.QueryRow(context.Background(), `SELECT id FROM groups WHERE name = $1`, name).Scan(&id)
+	return id, err
+}
+
+func (r *Repository) CreateStudent(req *model.CreateStudentRequest) (*model.StudentResponse, error) {
+	firstName := req.FirstName
+	if firstName == "" {
+		firstName = req.Firstname
+	}
+	lastName := req.LastName
+	if lastName == "" {
+		lastName = req.Surname
+	}
+
+	groupID := req.GroupID
+	if groupID == 0 && req.GroupName != "" {
+		id, err := r.GetGroupIDByName(req.GroupName)
+		if err != nil {
+			return nil, fmt.Errorf("group not found: %s", req.GroupName)
+		}
+		groupID = id
+	}
+
+	query := `
+	INSERT INTO students (first_name, last_name, gender, birth_date, group_id)
+	VALUES ($1, $2, $3, $4, $5)
+	RETURNING id, first_name, last_name, gender, birth_date,
+	          (SELECT name FROM groups WHERE id = $5)
+	`
+
+	var student model.StudentResponse
+	err := r.db.QueryRow(
+		context.Background(),
+		query,
+		firstName,
+		lastName,
+		req.Gender,
+		req.BirthDate,
+		groupID,
+	).Scan(
+		&student.ID,
+		&student.FirstName,
+		&student.LastName,
+		&student.Gender,
+		&student.BirthDate,
+		&student.GroupName,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &student, nil
+}
+
+func (r *Repository) UpdateStudent(id string, req *model.UpdateStudentRequest) (*model.StudentResponse, error) {
+	// Build dynamic update query
+	query := `UPDATE students SET `
+	args := []interface{}{}
+	argNum := 1
+
+	if req.FirstName != nil {
+		query += fmt.Sprintf("first_name = $%d, ", argNum)
+		args = append(args, *req.FirstName)
+		argNum++
+	} else if req.Firstname != nil {
+		query += fmt.Sprintf("first_name = $%d, ", argNum)
+		args = append(args, *req.Firstname)
+		argNum++
+	}
+	if req.LastName != nil {
+		query += fmt.Sprintf("last_name = $%d, ", argNum)
+		args = append(args, *req.LastName)
+		argNum++
+	} else if req.Surname != nil {
+		query += fmt.Sprintf("last_name = $%d, ", argNum)
+		args = append(args, *req.Surname)
+		argNum++
+	}
+	if req.Gender != nil {
+		query += fmt.Sprintf("gender = $%d, ", argNum)
+		args = append(args, *req.Gender)
+		argNum++
+	}
+	if req.BirthDate != nil {
+		query += fmt.Sprintf("birth_date = $%d, ", argNum)
+		args = append(args, *req.BirthDate)
+		argNum++
+	}
+	if req.GroupID != nil {
+		query += fmt.Sprintf("group_id = $%d, ", argNum)
+		args = append(args, *req.GroupID)
+		argNum++
+	}
+	if req.GroupName != nil && *req.GroupName != "" {
+		groupID, err := r.GetGroupIDByName(*req.GroupName)
+		if err != nil {
+			return nil, fmt.Errorf("group not found: %s", *req.GroupName)
+		}
+		query += fmt.Sprintf("group_id = $%d, ", argNum)
+		args = append(args, groupID)
+		argNum++
+	}
+
+	if len(args) == 0 {
+		return r.GetStudentByID(id)
+	}
+
+	query = query[:len(query)-2]
+	query += fmt.Sprintf(" WHERE id = $%d RETURNING id, first_name, last_name, gender, birth_date, (SELECT name FROM groups g WHERE g.id = students.group_id)", argNum)
+	args = append(args, id)
+
+	var student model.StudentResponse
+	err := r.db.QueryRow(context.Background(), query, args...).Scan(
+		&student.ID,
+		&student.FirstName,
+		&student.LastName,
+		&student.Gender,
+		&student.BirthDate,
+		&student.GroupName,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &student, nil
+}
+
+func (r *Repository) DeleteStudent(id string) error {
+	query := `DELETE FROM students WHERE id = $1`
+	_, err := r.db.Exec(context.Background(), query, id)
+	return err
+}
+
 func (r *Repository) GetStudentByID(id string) (*model.StudentResponse, error) {
 	var err error
 
@@ -170,6 +303,120 @@ func (r *Repository) GetAllStudents() ([]model.StudentListResponse, error) {
 	}
 
 	return students, rows.Err()
+}
+
+func (r *Repository) CreateSchedule(req *model.CreateScheduleRequest) (*model.ScheduleResponse, error) {
+	query := `
+	INSERT INTO schedule (faculty_id, group_id, subject_id, class_time)
+	VALUES ($1, $2, $3, $4)
+	RETURNING id,
+	          (SELECT name FROM faculties WHERE id = $1),
+	          (SELECT name FROM groups WHERE id = $2),
+	          (SELECT name FROM subjects WHERE id = $3),
+	          class_time
+	`
+
+	var schedule model.ScheduleResponse
+	err := r.db.QueryRow(
+		context.Background(),
+		query,
+		req.FacultyID,
+		req.GroupID,
+		req.SubjectID,
+		req.ClassTime,
+	).Scan(
+		&schedule.ID,
+		&schedule.Faculty,
+		&schedule.Group,
+		&schedule.Subject,
+		&schedule.ClassTime,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &schedule, nil
+}
+
+func (r *Repository) UpdateSchedule(id string, req *model.UpdateScheduleRequest) (*model.ScheduleResponse, error) {
+	query := `SELECT faculty_id, group_id, subject_id, class_time FROM schedule WHERE id = $1`
+	var facultyID, groupID, subjectID int
+	var classTime string
+	err := r.db.QueryRow(context.Background(), query, id).Scan(&facultyID, &groupID, &subjectID, &classTime)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.FacultyID != nil {
+		facultyID = *req.FacultyID
+	}
+	if req.GroupID != nil {
+		groupID = *req.GroupID
+	}
+	if req.SubjectID != nil {
+		subjectID = *req.SubjectID
+	}
+	if req.ClassTime != nil {
+		classTime = *req.ClassTime
+	}
+
+	updateQuery := `
+	UPDATE schedule SET faculty_id = $1, group_id = $2, subject_id = $3, class_time = $4
+	WHERE id = $5
+	RETURNING id,
+	          (SELECT name FROM faculties WHERE id = $1),
+	          (SELECT name FROM groups WHERE id = $2),
+	          (SELECT name FROM subjects WHERE id = $3),
+	          class_time
+	`
+	var schedule model.ScheduleResponse
+	err = r.db.QueryRow(
+		context.Background(),
+		updateQuery,
+		facultyID,
+		groupID,
+		subjectID,
+		classTime,
+		id,
+	).Scan(
+		&schedule.ID,
+		&schedule.Faculty,
+		&schedule.Group,
+		&schedule.Subject,
+		&schedule.ClassTime,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &schedule, nil
+}
+
+func (r *Repository) DeleteSchedule(id string) error {
+	query := `DELETE FROM schedule WHERE id = $1`
+	_, err := r.db.Exec(context.Background(), query, id)
+	return err
+}
+
+func (r *Repository) GetScheduleByID(id string) (*model.ScheduleResponse, error) {
+	query := `
+	SELECT sc.id, f.name, g.name, s.name, sc.class_time
+	FROM schedule sc
+	JOIN faculties f ON sc.faculty_id = f.id
+	JOIN groups g ON sc.group_id = g.id
+	JOIN subjects s ON sc.subject_id = s.id
+	WHERE sc.id = $1
+	`
+	var schedule model.ScheduleResponse
+	err := r.db.QueryRow(context.Background(), query, id).Scan(
+		&schedule.ID,
+		&schedule.Faculty,
+		&schedule.Group,
+		&schedule.Subject,
+		&schedule.ClassTime,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &schedule, nil
 }
 
 func (r *Repository) GetAllSchedules() ([]model.ScheduleResponse, error) {
@@ -244,22 +491,129 @@ func (r *Repository) GetGroupSchedule(groupID string) ([]model.ScheduleResponse,
 	return schedules, nil
 }
 
-func (r *Repository) CreateAttendanceRecord(record *model.AttendanceRecord) error {
+func (r *Repository) CreateAttendanceRecord(record *model.AttendanceRecord) (*model.AttendanceRecord, error) {
 	query := `
 	INSERT INTO attendance (student_id, subject_id, visit_day, visited)
 	VALUES ($1, $2, $3, $4)
+	RETURNING id, student_id, subject_id, visit_day, visited
 	`
 
-	_, err := r.db.Exec(
+	var created model.AttendanceRecord
+	err := r.db.QueryRow(
 		context.Background(),
 		query,
 		record.StudentID,
 		record.SubjectID,
 		record.VisitDay,
 		record.Visited,
+	).Scan(
+		&created.ID,
+		&created.StudentID,
+		&created.SubjectID,
+		&created.VisitDay,
+		&created.Visited,
 	)
+	if err != nil {
+		return nil, err
+	}
+	return &created, nil
+}
 
+func (r *Repository) UpdateAttendanceRecord(id string, req *model.UpdateAttendanceRequest) (*model.AttendanceRecord, error) {
+	query := `SELECT student_id, subject_id, visit_day, visited FROM attendance WHERE id = $1`
+	var studentID, subjectID int
+	var visitDay string
+	var visited bool
+	err := r.db.QueryRow(context.Background(), query, id).Scan(&studentID, &subjectID, &visitDay, &visited)
+	if err != nil {
+		return nil, err
+	}
+
+	if req.StudentID != nil {
+		studentID = *req.StudentID
+	}
+	if req.SubjectID != nil {
+		subjectID = *req.SubjectID
+	}
+	if req.VisitDay != nil {
+		visitDay = *req.VisitDay
+	}
+	if req.Visited != nil {
+		visited = *req.Visited
+	}
+
+	updateQuery := `
+	UPDATE attendance SET student_id = $1, subject_id = $2, visit_day = $3, visited = $4
+	WHERE id = $5
+	RETURNING id, student_id, subject_id, visit_day, visited
+	`
+	var record model.AttendanceRecord
+	err = r.db.QueryRow(
+		context.Background(),
+		updateQuery,
+		studentID,
+		subjectID,
+		visitDay,
+		visited,
+		id,
+	).Scan(
+		&record.ID,
+		&record.StudentID,
+		&record.SubjectID,
+		&record.VisitDay,
+		&record.Visited,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &record, nil
+}
+
+func (r *Repository) DeleteAttendanceRecord(id string) error {
+	query := `DELETE FROM attendance WHERE id = $1`
+	_, err := r.db.Exec(context.Background(), query, id)
 	return err
+}
+
+func (r *Repository) GetAttendanceByID(id string) (*model.AttendanceRecord, error) {
+	query := `SELECT id, student_id, subject_id, visit_day, visited FROM attendance WHERE id = $1`
+	var record model.AttendanceRecord
+	err := r.db.QueryRow(context.Background(), query, id).Scan(
+		&record.ID,
+		&record.StudentID,
+		&record.SubjectID,
+		&record.VisitDay,
+		&record.Visited,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &record, nil
+}
+
+func (r *Repository) GetAllAttendanceRecords() ([]model.AttendanceRecord, error) {
+	query := `SELECT id, student_id, subject_id, visit_day, visited FROM attendance`
+	rows, err := r.db.Query(context.Background(), query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var records []model.AttendanceRecord
+	for rows.Next() {
+		var record model.AttendanceRecord
+		if err := rows.Scan(
+			&record.ID,
+			&record.StudentID,
+			&record.SubjectID,
+			&record.VisitDay,
+			&record.Visited,
+		); err != nil {
+			return nil, err
+		}
+		records = append(records, record)
+	}
+	return records, rows.Err()
 }
 
 func (r *Repository) GetAttendanceRecordsByStudentID(studentID string) ([]model.AttendanceRecord, error) {
